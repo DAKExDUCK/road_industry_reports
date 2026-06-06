@@ -1,0 +1,20 @@
+[MASTER]
+ignore=venv
+
+[MESSAGES CONTROL]
+disable=
+    global-variable-not-assigned,
+    anomalous-backslash-in-string,
+    logging-fstring-interpolation,
+    broad-exception-caught,
+    redefined-outer-name,
+    chained-comparison,
+    line-too-long,
+    too-few-public-methods
+
+[FORMAT]
+max-line-length=121
+
+[BASIC]
+good-names=i,j,k,c,n,_
+bad-names=foo,bar,baz,toto,tutu,tata

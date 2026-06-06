@@ -1,0 +1,4 @@
+-r requirements.txt
+
+# For development and testing
+black==26.5.1
