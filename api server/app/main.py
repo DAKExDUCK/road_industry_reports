@@ -24,7 +24,6 @@ from .api import auth as auth_router
 from .api import roles as roles_router
 from .db import engine
 from .models import Base
-from .core.config import settings
 from . import crud
 
 
@@ -41,8 +40,9 @@ def on_startup():
     from sqlalchemy.orm import Session
     db = Session(bind=engine)
     try:
-        root_email = settings.dict().get("ROOT_ADMIN_EMAIL") or settings.__dict__.get("ROOT_ADMIN_EMAIL")
-        root_password = settings.dict().get("ROOT_ADMIN_PASSWORD") or settings.__dict__.get("ROOT_ADMIN_PASSWORD")
+        # Read root admin credentials from settings; support multiple key styles
+        root_email = getattr(settings, "ROOT_ADMIN_EMAIL", None) or getattr(settings, "root_admin_email", None)
+        root_password = getattr(settings, "ROOT_ADMIN_PASSWORD", None) or getattr(settings, "root_admin_password", None)
 
         # create roles if missing
         root_role = crud.get_role_by_name(db, "root_admin")

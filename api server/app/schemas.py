@@ -15,7 +15,7 @@ class UserOut(UserBase):
     is_active: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PermissionBase(BaseModel):
@@ -27,7 +27,7 @@ class PermissionOut(PermissionBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RoleBase(BaseModel):
@@ -46,7 +46,7 @@ class RoleOut(RoleBase):
     permissions: list[PermissionOut] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Token(BaseModel):
