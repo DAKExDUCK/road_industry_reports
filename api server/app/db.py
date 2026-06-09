@@ -1,3 +1,9 @@
+"""Database engine, session factory, and base declarative class.
+
+Defines the SQLAlchemy engine, a sessionmaker for creating sessions,
+and the `Base` declarative class used by models.
+"""
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 

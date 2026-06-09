@@ -1,3 +1,9 @@
+"""CRUD helpers for users, roles, and permissions.
+
+This module provides convenience functions for creating and querying
+users, roles, and permissions in the database.
+"""
+
 from sqlalchemy.orm import Session
 
 from . import models, schemas
@@ -5,10 +11,15 @@ from .core.security import get_password_hash, verify_password
 
 
 def get_user_by_email(db: Session, email: str):
+    """Return the `User` with the given email or `None` if not found."""
     return db.query(models.User).filter(models.User.email == email).first()
 
 
 def create_user(db: Session, user: schemas.UserCreate):
+    """Create a new `User` from a `UserCreate` schema and persist it.
+
+    Returns the created `User` instance.
+    """
     db_user = models.User(email=user.email, hashed_password=get_password_hash(user.password))
     db.add(db_user)
     db.commit()
@@ -17,6 +28,10 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 
 def authenticate_user(db: Session, email: str, password: str):
+    """Authenticate a user by email and password.
+
+    Returns the `User` if authentication succeeds, otherwise `False`.
+    """
     user = get_user_by_email(db, email)
     if not user:
         return False
@@ -27,10 +42,12 @@ def authenticate_user(db: Session, email: str, password: str):
 
 # Roles & Permissions CRUD
 def get_role_by_name(db: Session, name: str):
+    """Return the `Role` with the given name or `None` if missing."""
     return db.query(models.Role).filter(models.Role.name == name).first()
 
 
 def create_role(db: Session, role_in: schemas.RoleCreate):
+    """Create and persist a `Role` from a `RoleCreate` schema."""
     role = models.Role(
         name=role_in.name,
         is_admin=role_in.is_admin or False,
@@ -43,6 +60,7 @@ def create_role(db: Session, role_in: schemas.RoleCreate):
 
 
 def create_permission(db: Session, perm_in: schemas.PermissionBase):
+    """Create a `Permission`, persist it, and assign to admin-like roles."""
     perm = models.Permission(name=perm_in.name, description=perm_in.description)
     db.add(perm)
     db.commit()
@@ -56,6 +74,7 @@ def create_permission(db: Session, perm_in: schemas.PermissionBase):
 
 
 def assign_role_to_user(db: Session, user: models.User, role: models.Role):
+    """Assign `role` to `user` if not already assigned and return the user."""
     if role not in user.roles:
         user.roles.append(role)
         db.commit()
@@ -64,6 +83,7 @@ def assign_role_to_user(db: Session, user: models.User, role: models.Role):
 
 
 def assign_permission_to_role(db: Session, role: models.Role, perm: models.Permission):
+    """Assign a `Permission` to a `Role` if missing and return the role."""
     if perm not in role.permissions:
         role.permissions.append(perm)
         db.commit()

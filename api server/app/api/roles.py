@@ -1,3 +1,5 @@
+"""Admin routes for managing roles and permissions."""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -41,6 +43,7 @@ def create_role(
     db: Session = Depends(get_db),
     _user=Depends(require_root_user),
 ):
+    """Create a role. Only root-admin users are allowed to create roles."""
     existing = crud.get_role_by_name(db, role_in.name)
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Role exists")
@@ -53,8 +56,9 @@ def assign_role_to_user(
     role_id: int,
     user_id: int,
     db: Session = Depends(get_db),
-    _user=Depends(require_root_user),
+    _user=Depends(require_permission("role.assign")),
 ):
+    """Assign a role to a user. Requires `role.assign` permission."""
     role = db.query(models.Role).filter(models.Role.id == role_id).first()
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not role or not user:
@@ -70,6 +74,7 @@ def assign_perm_to_role(
     db: Session = Depends(get_db),
     _user=Depends(require_permission("perm.assign")),
 ):
+    """Assign a permission to a role. Requires `perm.assign` permission."""
     role = db.query(models.Role).filter(models.Role.id == role_id).first()
     perm = db.query(models.Permission).filter(models.Permission.id == perm_id).first()
     if not role or not perm:

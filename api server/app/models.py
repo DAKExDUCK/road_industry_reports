@@ -1,3 +1,5 @@
+"""SQLAlchemy models for users, roles, and permissions."""
+
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 
@@ -20,6 +22,16 @@ role_permissions = Table(
 
 
 class User(Base):
+    """User account model.
+
+    Attributes:
+        id: Primary key.
+        email: Unique user email.
+        hashed_password: Password hash.
+        is_active: Whether the account is active.
+        roles: Relationship to `Role`.
+    """
+
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
@@ -32,6 +44,14 @@ class User(Base):
 
 
 class Role(Base):
+    """Role model representing a group with permissions.
+
+    Attributes:
+        name: Role name.
+        is_admin: Whether this role should receive admin-like permissions.
+        is_root: Whether this role is a root/admin role.
+    """
+
     __tablename__ = "roles"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
@@ -45,6 +65,8 @@ class Role(Base):
 
 
 class Permission(Base):
+    """Permission model representing a named permission."""
+
     __tablename__ = "permissions"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)

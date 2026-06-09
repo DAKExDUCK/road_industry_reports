@@ -1,3 +1,10 @@
+"""Dependency helpers for retrieving the current user and enforcing permissions.
+
+This module exposes `get_db` for acquiring a DB session, `get_current_user`
+which decodes a JWT and returns the corresponding user, and helper
+dependencies for requiring root users or specific permissions.
+"""
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -11,6 +18,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 def get_db():
+    """Yield a database session and ensure it is closed afterwards."""
     db = session_local()
     try:
         yield db
@@ -19,6 +27,10 @@ def get_db():
 
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Decode the JWT `token` and return the corresponding `User`.
+
+    Raises HTTP 401 if the token is invalid or the user does not exist.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -38,7 +50,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 
 def require_root_user(current_user: models.User = Depends(get_current_user)):
-    # Ensure current_user has a role with is_root=True
+    """Dependency that ensures `current_user` has a role with `is_root=True`.
+
+    Raises HTTP 403 if the user is not a root admin.
+    """
     for r in getattr(current_user, "roles", []):
         if getattr(r, "is_root", False):
             return current_user
@@ -46,6 +61,12 @@ def require_root_user(current_user: models.User = Depends(get_current_user)):
 
 
 def require_permission(permission_name: str):
+    """Factory that returns a dependency which checks for `permission_name`.
+
+    The returned dependency will raise HTTP 403 if the current user lacks the
+    named permission.
+    """
+
     def _checker(current_user: models.User = Depends(get_current_user)):
         # collect permissions from user roles
         perms = set()

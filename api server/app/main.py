@@ -1,3 +1,5 @@
+"""Application factory and startup helpers for the API server."""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -22,6 +24,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
+    """Root endpoint returning a simple health/message payload."""
     return {"message": "Road Industry Reports API"}
 
 
@@ -32,6 +35,7 @@ app.include_router(roles_router.router, prefix="/admin", tags=["admin"])
 
 @app.on_event("startup")
 def on_startup():
+    """Create database tables and seed default roles/root admin if configured."""
     # Ensure tables exist
     Base.metadata.create_all(bind=engine)
 

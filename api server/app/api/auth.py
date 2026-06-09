@@ -1,3 +1,5 @@
+"""Authentication endpoints for obtaining tokens and managing users."""
+
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
