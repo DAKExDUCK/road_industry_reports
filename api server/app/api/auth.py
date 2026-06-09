@@ -1,12 +1,13 @@
 from datetime import timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from .. import schemas, crud, models
-from ..deps import get_db, get_current_user, require_root_user
-from ..core.security import create_access_token
+from .. import crud, models, schemas
 from ..core.config import settings
+from ..core.security import create_access_token
+from ..deps import get_current_user, get_db, require_root_user
 
 router = APIRouter()
 
@@ -23,7 +24,11 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 
 
 @router.post("/register", response_model=schemas.UserOut)
-def register(user_in: schemas.UserCreate, db: Session = Depends(get_db), current_user: models.User = Depends(require_root_user)):
+def register(
+    user_in: schemas.UserCreate,
+    db: Session = Depends(get_db),
+    _: models.User = Depends(require_root_user),
+):
     """Register a new user (email + password).
 
     Only root-admin users are allowed to register new users.

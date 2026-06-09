@@ -31,20 +31,20 @@ fi
 for tool in "${TO_RUN[@]}"; do
   case "$tool" in
     black)
-      echo "==> Running: black $BLACK_ARGS"
-      black $BLACK_ARGS
+      echo "==> Running: black --config $CONFIG_DIR/pyproject.toml $BLACK_ARGS"
+      black --config "$CONFIG_DIR/pyproject.toml" $BLACK_ARGS
       ;;
     isort)
-      echo "==> Running: isort $ISORT_ARGS"
-      isort $ISORT_ARGS
+      echo "==> Running: isort --settings-path $CONFIG_DIR/pyproject.toml $ISORT_ARGS"
+      isort --settings-path "$CONFIG_DIR/pyproject.toml" $ISORT_ARGS
       ;;
     pylint)
-      echo "==> Running: pylint $PYLINT_ARGS"
-      pylint $PYLINT_ARGS
+      echo "==> Running: pylint --rcfile $CONFIG_DIR/.pylintrc $PYLINT_ARGS"
+      pylint --rcfile "$CONFIG_DIR/.pylintrc" $PYLINT_ARGS
       ;;
     mypy)
-      echo "==> Running: mypy $MYPY_ARGS"
-      mypy $MYPY_ARGS
+      echo "==> Running: mypy --config-file $CONFIG_DIR/mypy.ini $MYPY_ARGS"
+      mypy --config-file "$CONFIG_DIR/mypy.ini" $MYPY_ARGS
       ;;
     *)
       echo "Unknown tool: $tool" >&2

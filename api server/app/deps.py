@@ -3,15 +3,15 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from .core.config import settings
-from .db import SessionLocal
 from . import models
+from .core.config import settings
+from .db import session_local
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 def get_db():
-    db = SessionLocal()
+    db = session_local()
     try:
         yield db
     finally:
@@ -29,8 +29,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-    except JWTError:
-        raise credentials_exception
+    except JWTError as exc:
+        raise credentials_exception from exc
     user = db.query(models.User).filter(models.User.email == email).first()
     if user is None:
         raise credentials_exception
@@ -51,9 +51,10 @@ def require_permission(permission_name: str):
         perms = set()
         for r in getattr(current_user, "roles", []):
             # roles with is_admin True implicitly have all perms via assignment on creation
-            for p in getattr(r, "permissions", []) :
+            for p in getattr(r, "permissions", []):
                 perms.add(p.name)
         if permission_name in perms:
             return current_user
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+
     return _checker

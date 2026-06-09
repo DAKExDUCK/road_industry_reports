@@ -1,7 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
+from . import crud
+from .api import auth as auth_router
+from .api import roles as roles_router
 from .core.config import settings
+from .db import engine
+from .models import Base
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
@@ -20,13 +26,6 @@ def read_root():
 
 
 # Register routers
-from .api import auth as auth_router
-from .api import roles as roles_router
-from .db import engine
-from .models import Base
-from . import crud
-
-
 app.include_router(auth_router.router, prefix="/auth", tags=["auth"])
 app.include_router(roles_router.router, prefix="/admin", tags=["admin"])
 
@@ -37,7 +36,6 @@ def on_startup():
     Base.metadata.create_all(bind=engine)
 
     # Seed default roles and root admin if configured
-    from sqlalchemy.orm import Session
     db = Session(bind=engine)
     try:
         # Read root admin credentials from settings; support multiple key styles
@@ -47,7 +45,10 @@ def on_startup():
         # create roles if missing
         root_role = crud.get_role_by_name(db, "root_admin")
         if not root_role:
-            root_role = crud.create_role(db, type("R", (), {"name": "root_admin", "is_admin": True, "is_root": True}))
+            root_role = crud.create_role(
+                db,
+                type("R", (), {"name": "root_admin", "is_admin": True, "is_root": True}),
+            )
         admin_role = crud.get_role_by_name(db, "admin")
         if not admin_role:
             admin_role = crud.create_role(db, type("R", (), {"name": "admin", "is_admin": True, "is_root": False}))

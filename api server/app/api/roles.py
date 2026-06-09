@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from .. import schemas, crud, models
-from ..deps import get_db, require_root_user, require_permission
+from .. import crud, models, schemas
+from ..deps import get_db, require_permission, require_root_user
 
 router = APIRouter()
 
@@ -15,7 +15,11 @@ def list_permissions(db: Session = Depends(get_db), _user=Depends(require_permis
 
 
 @router.post("/permissions", response_model=schemas.PermissionOut)
-def create_permission(perm_in: schemas.PermissionBase, db: Session = Depends(get_db), _user=Depends(require_permission("perm.create"))):
+def create_permission(
+    perm_in: schemas.PermissionBase,
+    db: Session = Depends(get_db),
+    _user=Depends(require_permission("perm.create")),
+):
     """Create a permission. Permission is automatically assigned to admin-like roles."""
     existing = db.query(models.Permission).filter(models.Permission.name == perm_in.name).first()
     if existing:
@@ -32,7 +36,11 @@ def list_roles(db: Session = Depends(get_db), _user=Depends(require_permission("
 
 
 @router.post("/roles", response_model=schemas.RoleOut)
-def create_role(role_in: schemas.RoleCreate, db: Session = Depends(get_db), _user=Depends(require_root_user)):
+def create_role(
+    role_in: schemas.RoleCreate,
+    db: Session = Depends(get_db),
+    _user=Depends(require_root_user),
+):
     existing = crud.get_role_by_name(db, role_in.name)
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Role exists")
@@ -41,7 +49,12 @@ def create_role(role_in: schemas.RoleCreate, db: Session = Depends(get_db), _use
 
 
 @router.post("/roles/{role_id}/assign/{user_id}")
-def assign_role_to_user(role_id: int, user_id: int, db: Session = Depends(get_db), _user=Depends(require_root_user)):
+def assign_role_to_user(
+    role_id: int,
+    user_id: int,
+    db: Session = Depends(get_db),
+    _user=Depends(require_root_user),
+):
     role = db.query(models.Role).filter(models.Role.id == role_id).first()
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not role or not user:
@@ -51,7 +64,12 @@ def assign_role_to_user(role_id: int, user_id: int, db: Session = Depends(get_db
 
 
 @router.post("/roles/{role_id}/permissions/{perm_id}")
-def assign_perm_to_role(role_id: int, perm_id: int, db: Session = Depends(get_db), _user=Depends(require_permission("perm.assign"))):
+def assign_perm_to_role(
+    role_id: int,
+    perm_id: int,
+    db: Session = Depends(get_db),
+    _user=Depends(require_permission("perm.assign")),
+):
     role = db.query(models.Role).filter(models.Role.id == role_id).first()
     perm = db.query(models.Permission).filter(models.Permission.id == perm_id).first()
     if not role or not perm:

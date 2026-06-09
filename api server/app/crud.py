@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+
 from . import models, schemas
 from .core.security import get_password_hash, verify_password
 
@@ -30,7 +31,11 @@ def get_role_by_name(db: Session, name: str):
 
 
 def create_role(db: Session, role_in: schemas.RoleCreate):
-    role = models.Role(name=role_in.name, is_admin=role_in.is_admin or False, is_root=role_in.is_root or False)
+    role = models.Role(
+        name=role_in.name,
+        is_admin=role_in.is_admin or False,
+        is_root=role_in.is_root or False,
+    )
     db.add(role)
     db.commit()
     db.refresh(role)
@@ -43,7 +48,7 @@ def create_permission(db: Session, perm_in: schemas.PermissionBase):
     db.commit()
     db.refresh(perm)
     # automatically assign this permission to all admin-like roles
-    admin_roles = db.query(models.Role).filter(models.Role.is_admin == True).all()
+    admin_roles = db.query(models.Role).filter(models.Role.is_admin is True).all()
     for r in admin_roles:
         r.permissions.append(perm)
     db.commit()
@@ -64,4 +69,3 @@ def assign_permission_to_role(db: Session, role: models.Role, perm: models.Permi
         db.commit()
         db.refresh(role)
     return role
-

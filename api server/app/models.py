@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, Boolean, Table, ForeignKey
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
-from .db import Base
 
+from .db import Base
 
 # Association tables
 user_roles = Table(
@@ -36,7 +36,7 @@ class Role(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
     is_admin = Column(Boolean, default=False)  # admin-like roles that should receive new perms
-    is_root = Column(Boolean, default=False)   # root admin role (one or more users)
+    is_root = Column(Boolean, default=False)  # root admin role (one or more users)
     users = relationship("User", secondary=user_roles, back_populates="roles")
     permissions = relationship("Permission", secondary=role_permissions, back_populates="roles")
 
