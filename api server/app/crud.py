@@ -66,7 +66,7 @@ def create_permission(db: Session, perm_in: schemas.PermissionBase):
     db.commit()
     db.refresh(perm)
     # automatically assign this permission to all admin-like roles
-    admin_roles = db.query(models.Role).filter(models.Role.is_admin is True).all()
+    admin_roles = db.query(models.Role).filter(models.Role.is_admin).all()
     for r in admin_roles:
         r.permissions.append(perm)
     db.commit()
